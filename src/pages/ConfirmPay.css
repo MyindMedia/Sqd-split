@@ -1,0 +1,49 @@
+.confirm-page { min-height: 100vh; display: flex; flex-direction: column; }
+.confirm-body { flex: 1; padding: 0 var(--space-5); display: flex; flex-direction: column; gap: var(--space-5); }
+.confirm-list { display: flex; flex-direction: column; gap: var(--space-3); }
+.confirm-participant { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; }
+.confirm-participant-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.confirm-check { width: 28px; height: 28px; border-radius: 50%; background: var(--surface-container-highest); display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.confirm-check.checked { background: rgba(225, 253, 113, 0.12); }
+.confirm-total-card { padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+.confirm-total-row { display: flex; justify-content: space-between; align-items: center; }
+.confirm-total-row.total { padding-top: var(--space-2); }
+.confirm-divider { height: 1px; background: rgba(72, 72, 71, 0.15); margin: var(--space-1) 0; }
+.confirm-payment-method { display: flex; flex-direction: column; gap: var(--space-3); }
+.payment-card-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); background: var(--surface-container); border-radius: var(--radius-2xl); cursor: pointer; transition: background 0.15s; }
+.payment-card-row:hover { background: var(--surface-container-high); }
+.payment-card-row div { display: flex; flex-direction: column; gap: 2px; }
+.confirm-footer { padding: var(--space-4) var(--space-5) var(--space-8); }
+
+/* Tip Section */
+.tip-section {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.tip-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+}
+
+.tip-btn {
+  padding: var(--space-2) 0;
+  border-radius: var(--radius-lg);
+  background: var(--surface-container-high);
+  border: 1px solid transparent;
+  color: var(--on-surface-variant);
+  font-family: var(--font-label);
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.tip-btn.active {
+  background: rgba(225, 253, 113, 0.12);
+  border-color: var(--primary);
+  color: var(--primary);
+}

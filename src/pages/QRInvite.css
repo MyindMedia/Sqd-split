@@ -1,0 +1,12 @@
+.qr-page { min-height: 100vh; display: flex; flex-direction: column; }
+.qr-body { flex: 1; padding: var(--space-4) var(--space-5); display: flex; flex-direction: column; align-items: center; gap: var(--space-5); position: relative; }
+.qr-glow { position: absolute; top: 15%; left: 50%; transform: translateX(-50%); width: 260px; height: 260px; background: radial-gradient(circle, rgba(225, 253, 113, 0.06) 0%, transparent 70%); pointer-events: none; }
+.qr-card { padding: var(--space-6); display: flex; flex-direction: column; align-items: center; position: relative; z-index: 1; width: 100%; }
+.qr-code-area { padding: var(--space-4); background: rgba(14, 14, 14, 0.5); border-radius: var(--radius-2xl); }
+.qr-divider { display: flex; align-items: center; gap: var(--space-4); width: 100%; }
+.qr-divider::before, .qr-divider::after { content: ''; flex: 1; height: 1px; background: rgba(72, 72, 71, 0.2); }
+.btn-secondary { width: 100%; padding: var(--space-4) var(--space-6); background: var(--secondary-container); color: var(--secondary); font-family: var(--font-headline); font-size: 0.9375rem; font-weight: 600; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; gap: var(--space-2); transition: all 0.2s; }
+.btn-secondary:hover { filter: brightness(1.1); }
+.btn-outline { width: 100%; padding: var(--space-4) var(--space-6); background: transparent; color: var(--on-surface-variant); font-family: var(--font-headline); font-size: 0.9375rem; font-weight: 600; border-radius: var(--radius-full); border: 1px solid rgba(72, 72, 71, 0.2); display: flex; align-items: center; justify-content: center; gap: var(--space-2); transition: all 0.2s; }
+.btn-outline:hover { background: rgba(255, 255, 255, 0.03); border-color: rgba(72, 72, 71, 0.4); }
+.qr-joined { display: flex; align-items: center; padding: var(--space-4) 0; }

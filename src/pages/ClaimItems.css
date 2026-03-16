@@ -1,0 +1,15 @@
+.claim-page { min-height: 100vh; display: flex; flex-direction: column; padding-bottom: env(safe-area-inset-bottom); }
+.claim-info-row { display: flex; gap: var(--space-3); padding: 0 var(--space-5); margin-bottom: var(--space-4); }
+.claim-info-card { flex: 1; display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-4); background: var(--surface-container); border-radius: var(--radius-2xl); }
+.claim-participants { padding: var(--space-2) var(--space-5) var(--space-4); }
+.claim-items-list { flex: 1; padding: 0 var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+.claim-item { display: flex; align-items: center; justify-content: space-between; padding: var(--space-3); border-radius: var(--radius-xl); background: var(--surface-container); cursor: pointer; transition: all 0.2s; }
+.claim-item:hover { background: var(--surface-container-high); }
+.claim-item.claimed { background: rgba(225, 253, 113, 0.04); border: 1px solid rgba(225, 253, 113, 0.15); }
+.claim-item-left { display: flex; align-items: center; gap: var(--space-3); flex: 1; min-width: 0; }
+.claim-item-info { flex: 1; display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.claim-progress { height: 4px; background: var(--surface-container-highest); border-radius: var(--radius-full); overflow: hidden; }
+.claim-progress-fill { height: 100%; border-radius: var(--radius-full); transition: width 0.3s ease, background 0.3s ease; }
+.claim-summary { padding: var(--space-4) var(--space-5); display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-4); }
+.claim-summary-row { display: flex; justify-content: space-between; }
+.claim-footer { padding: var(--space-4) var(--space-5) var(--space-8); }

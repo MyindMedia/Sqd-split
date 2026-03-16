@@ -1,0 +1,18 @@
+.scan-page { min-height: 100vh; display: flex; flex-direction: column; }
+.scan-body { flex: 1; display: flex; flex-direction: column; gap: var(--space-5); padding: var(--space-4) var(--space-5); }
+.scan-viewfinder { position: relative; width: 100%; aspect-ratio: 3/4; background: var(--surface-container); border-radius: var(--radius-2xl); overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.scan-corner { position: absolute; width: 32px; height: 32px; border-color: var(--primary); border-style: solid; }
+.scan-corner.tl { top: 16px; left: 16px; border-width: 3px 0 0 3px; border-radius: 8px 0 0 0; }
+.scan-corner.tr { top: 16px; right: 16px; border-width: 3px 3px 0 0; border-radius: 0 8px 0 0; }
+.scan-corner.bl { bottom: 16px; left: 16px; border-width: 0 0 3px 3px; border-radius: 0 0 0 8px; }
+.scan-corner.br { bottom: 16px; right: 16px; border-width: 0 3px 3px 0; border-radius: 0 0 8px 0; }
+.scan-line { position: absolute; top: 30%; left: 16px; right: 16px; height: 2px; background: linear-gradient(90deg, transparent, var(--primary), transparent); animation: scanLine 2.5s ease-in-out infinite; }
+@keyframes scanLine { 0%, 100% { top: 20%; opacity: 0; } 50% { top: 75%; opacity: 1; } }
+.scan-placeholder { display: flex; flex-direction: column; align-items: center; opacity: 0.5; }
+.scan-tips { display: flex; flex-direction: column; gap: var(--space-2); }
+.scan-tip { display: flex; align-items: center; gap: var(--space-2); }
+.scan-actions { display: flex; flex-direction: column; align-items: center; padding: var(--space-4) 0; }
+.scan-capture-btn { width: 72px; height: 72px; border-radius: 50%; background: transparent; display: flex; align-items: center; justify-content: center; padding: 0; }
+.scan-capture-ring { width: 72px; height: 72px; border-radius: 50%; border: 3px solid var(--primary); display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.scan-capture-btn:hover .scan-capture-ring { border-color: var(--primary); box-shadow: 0 0 16px rgba(225, 253, 113, 0.2); }
+.scan-capture-inner { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%); }

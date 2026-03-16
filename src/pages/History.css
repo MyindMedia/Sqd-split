@@ -1,0 +1,11 @@
+.history-page { min-height: 100vh; }
+.history-stats { display: flex; gap: var(--space-3); padding: 0 var(--space-5); margin-bottom: var(--space-6); }
+.stat-card { flex: 1; display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-4) var(--space-2); }
+.display-stat { font-family: var(--font-headline); font-size: 1.25rem; font-weight: 800; letter-spacing: -0.02em; }
+.history-section { margin-top: var(--space-2); }
+.history-list { display: flex; flex-direction: column; }
+.history-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-5); cursor: pointer; transition: background 0.15s; }
+.history-item:hover { background: rgba(255, 255, 255, 0.02); }
+.history-item-info { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.history-item-right { display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-1); margin-right: var(--space-2); }
+.status-chip { padding: 2px 8px; border-radius: var(--radius-full); font-size: 0.625rem; white-space: nowrap; }

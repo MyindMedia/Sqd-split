@@ -1,0 +1,13 @@
+.friends-page { min-height: 100vh; padding-bottom: 100px; }
+.friends-top-row { margin-bottom: var(--space-4); }
+.friends-scroll { display: flex; gap: var(--space-4); padding: var(--space-2) var(--space-5); overflow-x: auto; }
+.all-friends-section { margin-top: var(--space-2); }
+.friends-list { display: flex; flex-direction: column; }
+.friend-list-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-5); transition: background 0.15s; }
+.friend-list-item:hover { background: rgba(255, 255, 255, 0.02); }
+.friend-list-info { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.friend-actions { display: flex; gap: var(--space-2); }
+.action-circle { width: 36px; height: 36px; border-radius: 50%; background: var(--surface-container-highest); display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.action-circle:hover { background: var(--surface-bright); }
+.action-delete { background: rgba(255, 115, 81, 0.12); }
+.action-delete:hover { background: rgba(255, 115, 81, 0.2); }
