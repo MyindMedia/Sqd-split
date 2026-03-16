@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "Sqd Split",
+    "slug": "sqd-split",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./public/favicon.svg",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./src/assets/hero.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0b0b0b"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.myindmedia.sqdsplit"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./public/favicon.svg",
+        "backgroundColor": "#0b0b0b"
+      },
+      "package": "com.myindmedia.sqdsplit"
+    },
+    "web": {
+      "favicon": "./public/favicon.svg",
+      "bundler": "vite"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "db21a2ed-e719-4c88-a54c-9f8913358044"
+      }
+    }
+  }
+}
