@@ -33,8 +33,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "db21a2ed-e719-4c88-a54c-9f8913358044"
+        "projectId": "5745af21-26c4-4c4f-a102-9613935fe0a9"
       }
-    }
+    },
+    "owner": "thamyind"
   }
 }
