@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from 'convex/react';
+import { SignOutButton } from "@clerk/react";
 import { api } from '../../convex/_generated/api';
 import { Avatar } from '../components/Avatar';
 import { BottomNav } from '../components/BottomNav';
@@ -9,8 +9,7 @@ import { useUser } from '../hooks/useUser';
 import './Profile.css';
 
 export default function Profile() {
-  const navigate = useNavigate();
-  const { userId, user: liveUser } = useUser();
+  const { userId, user: liveUser, clerkUser } = useUser();
   const updatePrefs = useMutation(api.users.updatePreferences);
   const paymentMethods = useQuery(api.friends.getPaymentMethods, userId ? { userId } : "skip");
 
@@ -42,10 +41,10 @@ export default function Profile() {
         {/* Avatar & Info */}
         <div className="profile-avatar-section">
           <div className="profile-avatar-ring">
-            <Avatar name={user.name} size={80} />
+            <Avatar name={clerkUser?.fullName || user.name} src={clerkUser?.imageUrl} size={80} />
           </div>
-          <h2 className="headline-sm" style={{ marginTop: 'var(--space-3)' }}>{user.name}</h2>
-          <span className="body-md text-muted">{user.handle}</span>
+          <h2 className="headline-sm" style={{ marginTop: 'var(--space-3)' }}>{clerkUser?.fullName || user.name}</h2>
+          <span className="body-md text-muted">{clerkUser?.username ? `@${clerkUser.username}` : user.handle}</span>
           <span className="label-sm text-muted" style={{ marginTop: 'var(--space-1)' }}>Member since {user.memberSince}</span>
         </div>
 
@@ -139,9 +138,11 @@ export default function Profile() {
               <path d="M6 4L10 8L6 12" stroke="#adaaaa" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
           </div>
-          <div className="profile-pref-row clickable" onClick={() => navigate('/')}>
-            <span className="body-md text-error">Log Out</span>
-          </div>
+          <SignOutButton>
+            <div className="profile-pref-row clickable">
+              <span className="body-md text-error">Log Out</span>
+            </div>
+          </SignOutButton>
         </section>
       </div>
 

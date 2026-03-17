@@ -30,11 +30,11 @@ export default function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/friends" element={<Friends />} />
           <Route path="/create" element={<CreateEvent />} />
-          <Route path="/invite/:eventId" element={<QRInvite />} />
-          <Route path="/scan/:eventId" element={<ScanReceipt />} />
-          <Route path="/claim/:eventId" element={<ClaimItems />} />
-          <Route path="/confirm/:eventId" element={<ConfirmPay />} />
-          <Route path="/receipt/:eventId" element={<SuccessReceipt />} />
+          <Route path="/invite/:id" element={<QRInvite />} />
+          <Route path="/scan/:id" element={<ScanReceipt />} />
+          <Route path="/claim/:id" element={<ClaimItems />} />
+          <Route path="/confirm/:id" element={<ConfirmPay />} />
+          <Route path="/receipt/:id" element={<SuccessReceipt />} />
           <Route path="/history" element={<History />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
