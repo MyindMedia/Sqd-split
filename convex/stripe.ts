@@ -90,3 +90,31 @@ export const createSetupIntent = action({
     };
   },
 });
+
+export const saveStripePaymentMethod = action({
+  args: {
+    userId: v.id("users"),
+    paymentMethodId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const stripeInstance = getStripe();
+    
+    // 1. Retrieve payment method from Stripe
+    const paymentMethod = await stripeInstance.paymentMethods.retrieve(args.paymentMethodId);
+    
+    // 2. Extract card details
+    const last4 = paymentMethod.card?.last4 || "0000";
+    const brand = paymentMethod.card?.brand || "card";
+    
+    // 3. Save to database using mutation
+    await ctx.runMutation(api.friends.addPaymentMethod, {
+      userId: args.userId,
+      type: brand,
+      last4: last4,
+      isDefault: true, // Defaulting new cards for now
+      stripePaymentMethodId: args.paymentMethodId,
+    });
+    
+    return { success: true };
+  },
+});

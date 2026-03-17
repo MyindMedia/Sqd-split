@@ -102,11 +102,29 @@
   transform: scale(0.98);
 }
 
-.cancel-btn {
-  width: 100%;
-  padding: 0.75rem;
-  color: var(--on-surface-variant);
-  font-size: 0.875rem;
-  font-weight: 500;
-  background: transparent;
+.test-card-helper {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: rgba(227, 255, 115, 0.05);
+  border: 1px dashed rgba(227, 255, 115, 0.2);
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.copy-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.25rem 0.5rem;
+  background: var(--primary);
+  color: var(--on-primary-container);
+  border-radius: 0.5rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.copy-badge:active {
+  transform: scale(0.9);
 }

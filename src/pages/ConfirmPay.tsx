@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { useQuery, useMutation } from 'convex/react';
+import { useQuery, useMutation, useAction } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 import { Avatar } from '../components/Avatar';
@@ -18,6 +18,7 @@ export default function ConfirmPay() {
   const event = useQuery(api.splitEvents.getEvent, eventId ? { eventId: eventId as Id<"splitEvents"> } : "skip");
   const participants = useQuery(api.splitEvents.getEventParticipants, eventId ? { eventId: eventId as Id<"splitEvents"> } : "skip");
   const updateTipMutation = useMutation(api.splitEvents.updateParticipantTip);
+  const savePaymentMethodAction = useAction(api.stripe.saveStripePaymentMethod);
 
   const me = participants?.find((p: any) => p.userId === userId);
   const currentTip = me?.tipPercentage ?? 20;
@@ -34,8 +35,20 @@ export default function ConfirmPay() {
     }
   };
 
-  const handlePaymentSuccess = () => {
-    // In a real app, you'd update the database here via mutation
+  const handlePaymentSuccess = async (paymentMethodId?: string) => {
+    // Save the card if we got a payment method ID
+    if (userId && paymentMethodId) {
+      try {
+        await savePaymentMethodAction({
+          userId,
+          paymentMethodId,
+        });
+      } catch (e) {
+        console.error("Failed to save payment method:", e);
+      }
+    }
+    
+    // In a real app, you'd also mark the participant as "paid" in the database here
     // For now, we'll navigate to the receipt as the "success" state
     navigate(`/receipt/${eventId}`);
   };

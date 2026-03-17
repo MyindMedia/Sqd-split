@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useMutation } from 'convex/react';
+import { useQuery, useMutation, useAction } from 'convex/react';
 import { SignOutButton } from "@clerk/react";
 import { api } from '../../convex/_generated/api';
 import { Avatar } from '../components/Avatar';
@@ -13,6 +13,7 @@ export default function Profile() {
   const { userId, user: liveUser, clerkUser } = useUser();
   const updatePrefs = useMutation(api.users.updatePreferences);
   const paymentMethods = useQuery(api.friends.getPaymentMethods, userId ? { userId } : "skip");
+  const savePaymentMethodAction = useAction(api.stripe.saveStripePaymentMethod);
   
   const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
 
@@ -27,9 +28,13 @@ export default function Profile() {
     }
   };
 
-  const handleSetupSuccess = () => {
-    // In a real app, you'd confirm the setup intent on the server
-    // For now, the successful setup intent confirms the card is saved
+  const handleSetupSuccess = async (paymentMethodId?: string) => {
+    if (userId && paymentMethodId) {
+      await savePaymentMethodAction({
+        userId,
+        paymentMethodId,
+      });
+    }
   };
 
   return (

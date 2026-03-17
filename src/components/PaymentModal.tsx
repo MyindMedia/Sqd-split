@@ -118,6 +118,23 @@ const CheckoutForm: React.FC<{
         />
       </div>
 
+      <div className="test-card-helper">
+        <div className="flex flex-col">
+          <span className="label-sm text-muted">Test Card</span>
+          <span className="body-md font-mono">4242 4242 4242 4242</span>
+        </div>
+        <button 
+          type="button"
+          className="copy-badge"
+          onClick={() => {
+            navigator.clipboard.writeText('4242424242424242');
+            alert('Test Card Copied!');
+          }}
+        >
+          Copy
+        </button>
+      </div>
+
       {error && (
         <div className="error-message">
           {error}
