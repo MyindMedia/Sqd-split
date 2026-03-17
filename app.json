@@ -29,7 +29,7 @@
       "package": "com.myindmedia.sqdsplit"
     },
     "web": {
-      "favicon": "./public/favicon.svg"
+      "favicon": "./public/logo.png"
     },
     "extra": {
       "eas": {

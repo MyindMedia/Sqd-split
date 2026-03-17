@@ -13,7 +13,7 @@ export default function Login() {
             <path d="M15 18L9 12L15 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
-        <span className="login-logo text-primary" style={{ fontFamily: 'var(--font-headline)', fontWeight: 800, fontSize: '1.125rem' }}>Splits</span>
+        <img src="/logo.png" alt="Splits Logo" style={{ width: 32, height: 32, borderRadius: '0.5rem' }} />
         <div style={{ width: 24 }} />
       </header>
 

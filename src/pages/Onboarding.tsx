@@ -11,12 +11,7 @@ export default function Onboarding() {
       <div className="onboarding-content animate-fade-in">
         <div className="onboarding-logo-area">
           <div className="onboarding-logo-ring">
-            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-              <rect x="4" y="16" width="56" height="32" rx="8" stroke="#e1fd71" strokeWidth="3" />
-              <line x1="32" y1="16" x2="32" y2="48" stroke="#e1fd71" strokeWidth="2.5" strokeDasharray="4 3" />
-              <circle cx="20" cy="32" r="5" fill="#b3a1fe" />
-              <circle cx="44" cy="32" r="5" fill="#96bcff" />
-            </svg>
+            <img src="/logo.png" alt="Splits Logo" style={{ width: 80, height: 80, borderRadius: '1.25rem' }} />
           </div>
 
           <h1 className="onboarding-title">Splits</h1>
