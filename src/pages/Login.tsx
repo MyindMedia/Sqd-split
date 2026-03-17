@@ -1,8 +1,18 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
 
 export default function Login() {
   const navigate = useNavigate();
+  const [phone, setPhone] = useState('');
+
+  const handleContinue = () => {
+    // Save to localStorage for our mock auth flow
+    if (phone.trim()) {
+      localStorage.setItem('userPhone', phone.trim());
+    }
+    navigate('/home');
+  };
 
   return (
     <div className="login-page animate-fade-in">
@@ -33,6 +43,8 @@ export default function Login() {
               type="tel"
               placeholder="Phone number"
               className="body-md"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
             />
           </div>
         </div>
@@ -63,12 +75,12 @@ export default function Login() {
           </button>
         </div>
 
-        <button className="btn-primary-gradient" onClick={() => navigate('/home')} style={{ marginTop: 'var(--space-8)' }}>
+        <button className="btn-primary-gradient" onClick={handleContinue} style={{ marginTop: 'var(--space-8)' }}>
           Continue
         </button>
 
         <p className="login-signup-link body-sm" style={{ textAlign: 'center', marginTop: 'var(--space-6)' }}>
-          Don't have an account? <a href="#" className="text-secondary" onClick={(e) => { e.preventDefault(); navigate('/home'); }}>Sign up</a>
+          Don't have an account? <a href="#" className="text-secondary" onClick={(e) => { e.preventDefault(); handleContinue(); }}>Sign up</a>
         </p>
       </div>
     </div>
