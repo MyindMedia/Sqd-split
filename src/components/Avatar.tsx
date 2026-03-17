@@ -8,15 +8,17 @@ interface AvatarProps {
   borderColor?: string;
 }
 
-export function Avatar({ name, size = 44, src, showBorder = false, borderColor }: AvatarProps) {
-  const initials = name
+export function Avatar({ name = "User", size = 44, src, showBorder = false, borderColor }: AvatarProps) {
+  const safeName = name || "User";
+  const initials = safeName
     .split(' ')
+    .filter(Boolean)
     .map((n) => n[0])
     .join('')
     .toUpperCase()
     .slice(0, 2);
 
-  const colorIndex = name.charCodeAt(0) % AVATAR_COLORS.length;
+  const colorIndex = safeName.charCodeAt(0) % AVATAR_COLORS.length;
   const bgColor = AVATAR_COLORS[colorIndex];
 
   return (

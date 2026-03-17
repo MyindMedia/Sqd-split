@@ -5,6 +5,12 @@ import { ConvexProvider, ConvexReactClient } from 'convex/react';
 import { ClerkProvider } from "@clerk/react";
 import './index.css';
 import App from './App';
+import { ErrorBoundary } from './components/ErrorBoundary';
+
+console.log('App Initializing...', { 
+  hasClerkKey: !!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
+  convexUrl: import.meta.env.VITE_CONVEX_URL 
+});
 
 const convexUrl = import.meta.env.VITE_CONVEX_URL;
 const convex = new ConvexReactClient(convexUrl || "https://dummy.convex.cloud");
@@ -35,13 +41,15 @@ if (!publishableKey) {
 } else {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
-      <ClerkProvider publishableKey={publishableKey}>
-        <BrowserRouter>
-          <ConvexProvider client={convex}>
-            <App />
-          </ConvexProvider>
-        </BrowserRouter>
-      </ClerkProvider>
+      <ErrorBoundary>
+        <ClerkProvider publishableKey={publishableKey}>
+          <BrowserRouter>
+            <ConvexProvider client={convex}>
+              <App />
+            </ConvexProvider>
+          </BrowserRouter>
+        </ClerkProvider>
+      </ErrorBoundary>
     </StrictMode>,
   );
 }

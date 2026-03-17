@@ -11,13 +11,18 @@ export default function Home() {
   const navigate = useNavigate();
   const { userId, user: liveUser, isLoading } = useUser();
   
+  // Console logging for diagnostics
+  console.log('[Home] State:', { userId, hasLiveUser: !!liveUser, isLoading });
+
   // Convex live data
   const liveEvents = useQuery(api.splitEvents.listUserEvents, userId ? { userId } : "skip");
   const liveFriends = useQuery(api.friends.getUserFriends, userId ? { userId } : "skip");
 
   // Fallback to mock if not yet configured with Convex
-  const splits = liveEvents || mockRecentSplits;
-  const friends = liveFriends || mockFriends;
+  const splits = (liveEvents && liveEvents.length > 0) ? liveEvents : mockRecentSplits;
+  const friends = (liveFriends && liveFriends.length > 0) ? liveFriends : mockFriends;
+
+  console.log('[Home] Data:', { splitsCount: splits.length, friendsCount: friends.length });
 
   const activeSplit = (splits && splits.length > 0) ? (splits[0] as any) : mockRecentSplits[0];
 
