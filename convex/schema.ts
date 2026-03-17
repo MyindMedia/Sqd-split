@@ -83,6 +83,7 @@ export default defineSchema({
       v.literal("charged"),
       v.literal("failed")
     ),
+    isReadyToPay: v.optional(v.boolean()),
     joinedAt: v.string(),
   })
     .index("by_event", ["eventId"])

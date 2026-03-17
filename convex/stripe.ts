@@ -2,6 +2,7 @@ import { action } from "./_generated/server";
 import { v } from "convex/values";
 import Stripe from "stripe";
 import { api } from "./_generated/api";
+import type { Id } from "./_generated/dataModel";
 
 const getStripe = () => {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -116,5 +117,61 @@ export const saveStripePaymentMethod = action({
     });
     
     return { success: true };
+  },
+});
+
+export const executeAutoPull = action({
+  args: {
+    eventId: v.id("splitEvents"),
+  },
+  handler: async (ctx, args): Promise<Array<{ userId: Id<"users">; success: boolean; error?: string }>> => {
+    const stripeInstance = getStripe();
+    
+    // 1. Get all participants for the event
+    const participants = await ctx.runQuery(api.splitEvents.getEventParticipants, { eventId: args.eventId });
+    
+    const results: Array<{ userId: Id<"users">; success: boolean; error?: string }> = [];
+
+    for (const p of participants) {
+      // 2. Only process if ready and pending
+      if (p.isReadyToPay && p.paymentStatus === "pending") {
+        const amount = Math.round((p.calculatedTotal || 0) * 100);
+        if (amount <= 0) continue;
+
+        // 3. Get user's default payment method
+        const paymentMethods = await ctx.runQuery(api.friends.getPaymentMethods, { userId: p.userId });
+        const defaultMethod = paymentMethods.find((m: any) => m.isDefault) || paymentMethods[0];
+
+        if (defaultMethod?.stripePaymentMethodId) {
+          try {
+            // 4. Create and confirm PaymentIntent off-session
+            const user = await ctx.runQuery(api.users.getUser, { userId: p.userId });
+            
+            await stripeInstance.paymentIntents.create({
+              amount,
+              currency: "usd",
+              customer: user?.stripeCustomerId,
+              payment_method: defaultMethod.stripePaymentMethodId,
+              off_session: true,
+              confirm: true,
+            });
+
+            // 5. Mark as charged in database
+            await ctx.runMutation(api.splitEvents.updateParticipantStatus, {
+              eventId: args.eventId,
+              userId: p.userId,
+              status: "charged"
+            });
+
+            results.push({ userId: p.userId, success: true });
+          } catch (e: any) {
+            console.error(`Auto-pull failed for user ${p.userId}:`, e.message);
+            results.push({ userId: p.userId, success: false, error: e.message });
+          }
+        }
+      }
+    }
+
+    return results;
   },
 });

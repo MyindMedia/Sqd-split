@@ -1,17 +1,41 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from 'convex/react';
+import { useQuery, useAction } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from "../../convex/_generated/dataModel";
+import { useUser } from '../hooks/useUser';
+import { useState } from 'react';
 import './SuccessReceipt.css';
 
 export default function SuccessReceipt() {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
+  const { userId } = useUser();
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Convex live data
   const event = useQuery(api.splitEvents.getEvent, eventId ? { eventId: eventId as Id<"splitEvents"> } : "skip");
+  const participants = useQuery(api.splitEvents.getEventParticipants, eventId ? { eventId: eventId as Id<"splitEvents"> } : "skip");
+  const executeAutoPull = useAction(api.stripe.executeAutoPull);
 
-  const totalAmount = event?.totalBill || 875.24;
+  const isHost = event?.hostId === userId;
+  const readyParticipants = participants?.filter(p => p.isReadyToPay && p.paymentStatus === "pending") || [];
+  const pendingParticipants = participants?.filter(p => p.paymentStatus === "pending") || [];
+  
+  const totalAmount = event?.totalBill || 0;
+  const readyAmount = readyParticipants.reduce((sum, p) => sum + (p.calculatedTotal || 0), 0);
+
+  const handleAutoPull = async () => {
+    if (!eventId) return;
+    setIsProcessing(true);
+    try {
+      await executeAutoPull({ eventId: eventId as Id<"splitEvents"> });
+      // The query will auto-update participants status
+    } catch (e) {
+      console.error("Auto-pull failed:", e);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   return (
     <div className="success-page animate-fade-in">
@@ -65,6 +89,41 @@ export default function SuccessReceipt() {
             <span className="body-md">Download Receipt</span>
           </button>
         </div>
+
+        {isHost && pendingParticipants.length > 0 && (
+          <div className="squad-status-card glass-card animate-slide-up" style={{ marginTop: 'var(--space-6)', padding: 'var(--space-6)' }}>
+            <div className="status-header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-4)' }}>
+              <span className="title-sm">Squad Status</span>
+              <span className="label-sm text-primary">{readyParticipants.length}/{pendingParticipants.length} Ready</span>
+            </div>
+            
+            <div className="participant-mini-list" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+              {participants?.map((p, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span className="body-sm" style={{ opacity: p.paymentStatus === 'pending' ? 0.6 : 1 }}>{p.user?.name}</span>
+                  {p.paymentStatus !== 'pending' ? (
+                    <span className="label-sm text-primary">Paid</span>
+                  ) : p.isReadyToPay ? (
+                    <span className="label-sm" style={{ color: 'var(--primary)', fontWeight: 600 }}>Ready</span>
+                  ) : (
+                    <span className="label-sm text-muted">Waiting...</span>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {readyParticipants.length > 0 && (
+              <button 
+                className="btn-primary-gradient" 
+                style={{ width: '100%', marginTop: 'var(--space-6)' }}
+                onClick={handleAutoPull}
+                disabled={isProcessing}
+              >
+                {isProcessing ? "Processing..." : `Auto-Pull Ready ($${readyAmount.toFixed(2)})`}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="success-footer">

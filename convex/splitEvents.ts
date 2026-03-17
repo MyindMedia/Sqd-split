@@ -233,3 +233,54 @@ export const updateParticipantTip = mutation({
     });
   },
 });
+
+// ---- Update participant ready status ----
+export const updateParticipantReady = mutation({
+  args: {
+    eventId: v.id("splitEvents"),
+    userId: v.id("users"),
+    isReady: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const participant = await ctx.db
+      .query("participants")
+      .withIndex("by_event_user", (q) =>
+        q.eq("eventId", args.eventId).eq("userId", args.userId)
+      )
+      .first();
+
+    if (!participant) return null;
+
+    await ctx.db.patch(participant._id, {
+      isReadyToPay: args.isReady,
+    });
+  },
+});
+
+// ---- Update participant payment status ----
+export const updateParticipantStatus = mutation({
+  args: {
+    eventId: v.id("splitEvents"),
+    userId: v.id("users"),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("authorized"),
+      v.literal("charged"),
+      v.literal("failed")
+    ),
+  },
+  handler: async (ctx, args) => {
+    const participant = await ctx.db
+      .query("participants")
+      .withIndex("by_event_user", (q) =>
+        q.eq("eventId", args.eventId).eq("userId", args.userId)
+      )
+      .first();
+
+    if (!participant) return null;
+
+    await ctx.db.patch(participant._id, {
+      paymentStatus: args.status,
+    });
+  },
+});

@@ -18,12 +18,14 @@ export default function ConfirmPay() {
   const event = useQuery(api.splitEvents.getEvent, eventId ? { eventId: eventId as Id<"splitEvents"> } : "skip");
   const participants = useQuery(api.splitEvents.getEventParticipants, eventId ? { eventId: eventId as Id<"splitEvents"> } : "skip");
   const updateTipMutation = useMutation(api.splitEvents.updateParticipantTip);
+  const updateReadyMutation = useMutation(api.splitEvents.updateParticipantReady);
   const savePaymentMethodAction = useAction(api.stripe.saveStripePaymentMethod);
 
   const me = participants?.find((p: any) => p.userId === userId);
   const currentTip = me?.tipPercentage ?? 20;
   const myOwedAmount = me?.calculatedTotal || me?.totalOwed || 0;
   const myPaymentStatus = me?.paymentStatus || 'pending';
+  const isReadyToPay = me?.isReadyToPay || false;
 
   const handleTipChange = async (percent: number) => {
     if (userId && eventId && updateTipMutation) {
@@ -31,6 +33,16 @@ export default function ConfirmPay() {
         eventId: eventId as Id<"splitEvents">,
         userId,
         tipPercentage: percent
+      });
+    }
+  };
+
+  const handleToggleReady = async () => {
+    if (userId && eventId && updateReadyMutation) {
+      await updateReadyMutation({
+        eventId: eventId as Id<"splitEvents">,
+        userId,
+        isReady: !isReadyToPay
       });
     }
   };
@@ -56,7 +68,8 @@ export default function ConfirmPay() {
   const shares = participants?.map((p: any) => ({
     name: p.user?.name || "User",
     amount: p.calculatedTotal || p.totalOwed || 0,
-    paid: p.paymentStatus !== "pending"
+    paid: p.paymentStatus !== "pending",
+    ready: p.isReadyToPay || false
   })) || [];
 
   const totalAmount = event?.totalBill || 0;
@@ -85,7 +98,12 @@ export default function ConfirmPay() {
             <div key={i} className="confirm-participant">
               <Avatar name={share.name} size={44} />
               <div className="confirm-participant-info">
-                <span className="title-sm">{share.name}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                  <span className="title-sm">{share.name}</span>
+                  {share.ready && !share.paid && (
+                    <span className="label-sm" style={{ background: 'rgba(225, 253, 113, 0.1)', color: 'var(--primary)', padding: '2px 6px', borderRadius: '4px' }}>Ready</span>
+                  )}
+                </div>
                 <span className="label-sm text-muted">Total share ${share.amount.toFixed(2)}</span>
               </div>
               <div className={`confirm-check ${share.paid ? 'checked' : ''}`}>
@@ -154,13 +172,20 @@ export default function ConfirmPay() {
       </div>
 
       <div className="confirm-footer">
-        {myPaymentStatus === 'pending' ? (
-          <button className="btn-primary-gradient" onClick={() => setIsPaymentModalOpen(true)}>
-            Confirm & Pay ${myOwedAmount.toFixed(2)}
-          </button>
-        ) : (
+        {myPaymentStatus !== 'pending' ? (
           <button className="btn-primary-gradient" onClick={() => navigate(`/receipt/${eventId}`)}>
             View Receipt
+          </button>
+        ) : isReadyToPay ? (
+          <button className="btn-ghost" style={{ border: '1px solid var(--primary)', width: '100%', color: 'var(--primary)', cursor: 'default' }}>
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style={{ marginRight: '8px' }}>
+              <path d="M4 9L7 12L14 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Ready for Auto-Pay
+          </button>
+        ) : (
+          <button className="btn-primary-gradient" onClick={handleToggleReady}>
+            Confirm & I'm Ready
           </button>
         )}
       </div>
