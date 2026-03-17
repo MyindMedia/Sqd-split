@@ -65,6 +65,8 @@ export default defineSchema({
     ),
     inviteCode: v.optional(v.string()),
     isSecured: v.optional(v.boolean()),
+    receiptFileId: v.optional(v.string()), // Convex storage ID
+    isProcessingReceipt: v.optional(v.boolean()),
   })
     .index("by_host", ["hostId"])
     .index("by_status", ["status"])

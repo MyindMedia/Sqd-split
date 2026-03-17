@@ -1,39 +1,54 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useMutation, useQuery } from 'convex/react';
+import { useQuery, useAction, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
+import { useRef, useState } from 'react';
 import './ScanReceipt.css';
 
 export default function ScanReceipt() {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
-  const addItems = useMutation(api.receiptItems.addItems);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Convex hooks
   const event = useQuery(api.splitEvents.getEvent, eventId ? { eventId: eventId as Id<"splitEvents"> } : "skip");
+  const generateUploadUrl = useMutation(api.splitEvents.generateUploadUrl);
+  const processReceipt = useAction(api.ocr.processReceipt);
 
-  const handleCapture = async () => {
-    if (!eventId || !addItems) {
-      navigate('/claim');
-      return;
-    }
+  const handleCapture = () => {
+    fileInputRef.current?.click();
+  };
 
-    // Simulate OCR results
-    const mockOcrItems = [
-      { name: "Wagyu Burger", price: 28.50, quantity: 2 },
-      { name: "Truffle Fries", price: 14.00, quantity: 1 },
-      { name: "Craft Beer", price: 12.00, quantity: 4 },
-      { name: "Garden Salad", price: 16.00, quantity: 1 },
-      { name: "Coke Zero", price: 4.50, quantity: 2 },
-    ];
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !eventId) return;
 
+    setIsUploading(true);
     try {
-      await addItems({
-        eventId: eventId as Id<"splitEvents">,
-        items: mockOcrItems
+      // 1. Get upload URL
+      const postUrl = await generateUploadUrl();
+
+      // 2. Upload to Convex Storage
+      const result = await fetch(postUrl, {
+        method: "POST",
+        headers: { "Content-Type": file.type },
+        body: file,
       });
+      const { storageId } = await result.json();
+
+      // 3. Trigger OCR Action
+      await processReceipt({
+        eventId: eventId as Id<"splitEvents">,
+        storageId,
+      });
+
+      // 4. Navigate back to claim screen where items will appear
       navigate(`/claim/${eventId}`);
     } catch (err) {
-      console.error("Failed to add items:", err);
-      navigate(`/claim/${eventId}`);
+      console.error("Upload/OCR failed:", err);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -62,17 +77,31 @@ export default function ScanReceipt() {
           <div className="corner bl" />
           <div className="corner br" />
         </div>
-        <div className="scan-line" />
+        {!isUploading && <div className="scan-line" />}
+        {isUploading && (
+          <div className="upload-overlay">
+            <div className="pulsing-logo-mini" />
+            <span className="label-md">AIScanning...</span>
+          </div>
+        )}
       </div>
 
       <div className="scan-controls">
+        <input 
+          type="file" 
+          ref={fileInputRef} 
+          style={{ display: 'none' }} 
+          accept="image/*"
+          onChange={handleFileChange}
+        />
+        
         <div className="scan-tips">
           <span className="label-md">Tip: Hold steady for best results</span>
           <span className="label-sm text-muted">Make sure the text is clearly legible</span>
         </div>
         
         <div className="capture-row">
-          <button className="gallery-btn">
+          <button className="gallery-btn" onClick={handleCapture}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <rect x="3" y="3" width="18" height="18" rx="3" stroke="white" strokeWidth="1.5"/>
               <circle cx="8.5" cy="8.5" r="1.5" fill="white"/>
@@ -80,7 +109,7 @@ export default function ScanReceipt() {
             </svg>
           </button>
           
-          <button className="capture-outer" onClick={handleCapture}>
+          <button className={`capture-outer ${isUploading ? 'processing' : ''}`} onClick={handleCapture} disabled={isUploading}>
             <div className="capture-inner" />
           </button>
           
@@ -91,7 +120,7 @@ export default function ScanReceipt() {
           </button>
         </div>
         
-        <button className="manual-btn" onClick={handleCapture}>
+        <button className="manual-btn" onClick={() => navigate(`/claim/${eventId}`)}>
           <span className="body-md">Manual Entry</span>
         </button>
       </div>

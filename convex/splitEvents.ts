@@ -319,3 +319,43 @@ export const updateEventSecured = mutation({
     await ctx.db.patch(args.eventId, { isSecured: args.isSecured });
   },
 });
+
+// ---- Update event OCR status ----
+export const updateEventOCRStatus = mutation({
+  args: {
+    eventId: v.id("splitEvents"),
+    isProcessing: v.boolean(),
+    receiptFileId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.eventId, {
+      isProcessingReceipt: args.isProcessing,
+      receiptFileId: args.receiptFileId,
+    });
+  },
+});
+
+// ---- Bulk add items (from OCR) ----
+export const addEventItems = mutation({
+  args: {
+    eventId: v.id("splitEvents"),
+    items: v.array(v.object({
+      name: v.string(),
+      price: v.number(),
+      quantity: v.number(),
+    })),
+  },
+  handler: async (ctx, args) => {
+    for (const item of args.items) {
+      await ctx.db.insert("receiptItems", {
+        eventId: args.eventId,
+        ...item,
+      });
+    }
+  },
+});
+
+// ---- Storage ----
+export const generateUploadUrl = mutation(async (ctx) => {
+  return await ctx.storage.generateUploadUrl();
+});
