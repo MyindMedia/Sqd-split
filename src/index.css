@@ -84,7 +84,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  line-height: 0.9;
+  line-height: 1.1;
   font-family: var(--font-logo);
   color: var(--primary);
   text-transform: uppercase;
@@ -97,7 +97,7 @@
 
 .brand-split {
   font-size: 3.5rem;
-  margin-top: -0.25rem;
+  margin-top: 0.5rem;
 }
 
 /* ---- Reset & Base ---- */
