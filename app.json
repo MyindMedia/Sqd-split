@@ -36,6 +36,12 @@
         "projectId": "5745af21-26c4-4c4f-a102-9613935fe0a9"
       }
     },
-    "owner": "thamyind"
+    "owner": "thamyind",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/5745af21-26c4-4c4f-a102-9613935fe0a9"
+    }
   }
 }
