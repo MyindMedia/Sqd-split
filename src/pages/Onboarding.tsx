@@ -14,8 +14,11 @@ export default function Onboarding() {
             <img src="/logo.png" alt="Splits Logo" style={{ width: 80, height: 80, borderRadius: '1.25rem' }} />
           </div>
 
-          <h1 className="onboarding-title">Splits</h1>
-          <p className="onboarding-tagline">Split bills. Not friendships.</p>
+          <div className="brand-logo-stacked" style={{ marginTop: 'var(--space-6)' }}>
+            <span className="brand-sqd">Sqd</span>
+            <span className="brand-split">Split</span>
+          </div>
+          <p className="onboarding-tagline" style={{ marginTop: 'var(--space-2)' }}>Split bills. Not friendships.</p>
         </div>
 
         <div className="onboarding-illustration">

@@ -13,7 +13,10 @@ export default function Login() {
             <path d="M15 18L9 12L15 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
-        <img src="/logo.png" alt="Splits Logo" style={{ width: 32, height: 32, borderRadius: '0.5rem' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          <img src="/logo.png" alt="Sqd Split Logo" style={{ width: 28, height: 28, borderRadius: '0.5rem' }} />
+          <span style={{ fontFamily: 'var(--font-logo)', color: 'var(--primary)', fontSize: '1rem', textTransform: 'uppercase' }}>Sqd Split</span>
+        </div>
         <div style={{ width: 24 }} />
       </header>
 
