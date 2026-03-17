@@ -7,17 +7,10 @@ import './index.css';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
-console.log('App Initializing...', { 
-  hasClerkKey: !!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
-  convexUrl: import.meta.env.VITE_CONVEX_URL 
-});
-
-const convexUrl = import.meta.env.VITE_CONVEX_URL;
-const convex = new ConvexReactClient(convexUrl || "https://dummy.convex.cloud");
-
 const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const convexUrl = import.meta.env.VITE_CONVEX_URL;
 
-if (!publishableKey) {
+if (!publishableKey || !convexUrl) {
   createRoot(document.getElementById('root')!).render(
     <div style={{ 
       height: '100vh', 
@@ -25,20 +18,31 @@ if (!publishableKey) {
       flexDirection: 'column', 
       alignItems: 'center', 
       justifyContent: 'center', 
-      padding: '20px',
+      padding: '24px',
       textAlign: 'center',
       fontFamily: 'sans-serif',
       background: '#0e0e0e',
       color: 'white'
     }}>
-      <h1 style={{ color: '#ff4d4d' }}>Configuration Missing</h1>
-      <p>The <code>VITE_CLERK_PUBLISHABLE_KEY</code> is not set.</p>
-      <p style={{ opacity: 0.7, maxWidth: '400px' }}>
-        Please add your Clerk Publishable Key as an environment variable in your Netlify dashboard.
+      <h1 style={{ color: '#ff4d4d', marginBottom: '16px' }}>Configuration Error</h1>
+      <div style={{ background: '#1a1919', padding: '20px', borderRadius: '12px', border: '1px solid #333' }}>
+        {!publishableKey && <p style={{ color: '#ff80ab' }}>❌ <code>VITE_CLERK_PUBLISHABLE_KEY</code> is missing</p>}
+        {!convexUrl && <p style={{ color: '#ff80ab' }}>❌ <code>VITE_CONVEX_URL</code> is missing</p>}
+      </div>
+      <p style={{ marginTop: '24px', opacity: 0.7, maxWidth: '450px', lineHeight: '1.5' }}>
+        Please add these environment variables in your <strong>Netlify Dashboard</strong> and trigger a new deploy.
       </p>
+      <button 
+        onClick={() => window.location.reload()}
+        style={{ marginTop: '24px', padding: '10px 20px', borderRadius: '20px', border: 'none', background: 'white', fontWeight: 600, cursor: 'pointer' }}
+      >
+        Retry
+      </button>
     </div>
   );
 } else {
+  const convex = new ConvexReactClient(convexUrl);
+  
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <ErrorBoundary>
