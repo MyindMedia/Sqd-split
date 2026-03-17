@@ -8,6 +8,7 @@ import {
 } from '@stripe/react-stripe-js';
 import { useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import './PaymentModal.css';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
@@ -96,20 +97,21 @@ const CheckoutForm: React.FC<{
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="p-4 bg-zinc-900/50 rounded-xl border border-white/10">
+    <form onSubmit={handleSubmit} className="payment-actions">
+      <div className="stripe-element-container">
         <CardElement
           options={{
             style: {
               base: {
                 fontSize: '16px',
+                fontFamily: 'Inter, sans-serif',
                 color: '#ffffff',
                 '::placeholder': {
-                  color: '#a1a1aa',
+                  color: '#adaaaa',
                 },
               },
               invalid: {
-                color: '#ef4444',
+                color: '#ff7351',
               },
             },
           }}
@@ -117,7 +119,7 @@ const CheckoutForm: React.FC<{
       </div>
 
       {error && (
-        <div className="text-red-400 text-sm bg-red-400/10 p-3 rounded-lg border border-red-400/20 text-center">
+        <div className="error-message">
           {error}
         </div>
       )}
@@ -126,14 +128,14 @@ const CheckoutForm: React.FC<{
         <button
           type="submit"
           disabled={!stripe || processing}
-          className="w-full py-4 bg-[#E3FF73] text-black font-bold rounded-2xl disabled:opacity-50 transition-all active:scale-95"
+          className="confirm-btn"
         >
           {processing ? 'Processing...' : mode === 'payment' ? `Pay $${((amount || 0) / 100).toFixed(2)}` : 'Save Card'}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="w-full py-3 text-zinc-400 text-sm font-medium"
+          className="cancel-btn"
         >
           Cancel
         </button>
@@ -153,23 +155,24 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center p-4">
+    <div className="payment-modal-overlay">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        className="absolute inset-0"
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
         onClick={onClose}
       />
       
       {/* Content */}
-      <div className="relative w-full max-w-md bg-zinc-950 rounded-t-[32px] sm:rounded-[32px] border border-white/10 p-8 shadow-2xl animate-in slide-in-from-bottom duration-300">
-        <div className="mb-8 text-center">
-          <h2 className="text-2xl font-bold mb-2">
-            {mode === 'payment' ? 'Complete Payment' : 'Add Payment Method'}
+      <div className="payment-modal-container">
+        <div className="modal-header">
+          <h2 className="modal-title">
+            {mode === 'payment' ? 'Complete Payment' : 'Add Card'}
           </h2>
-          <p className="text-zinc-400 text-sm">
+          <p className="modal-subtitle">
             {mode === 'payment' 
-              ? 'Secure checkout powered by Stripe' 
-              : 'Securely save your card for future splits'}
+              ? 'Secure checkout via Stripe' 
+              : 'Securely save your card'}
           </p>
         </div>
 
