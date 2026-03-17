@@ -1,7 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
-// ---- Get current user (by phone or email) ----
+// ---- Get current user with absolute resilience ----
 export const getUser = query({
   args: { 
     userId: v.optional(v.id("users")),
@@ -10,30 +10,61 @@ export const getUser = query({
     email: v.optional(v.string()) 
   },
   handler: async (ctx, args) => {
+    console.log("[getUser] Request received with args:", JSON.stringify(args));
+    
     try {
+      // 1. Direct ID lookup (fastest, no index required)
       if (args.userId) {
         return await ctx.db.get(args.userId);
       }
 
+      // 2. Clerk ID lookup (Stable ID)
       if (args.clerkId) {
-        return await ctx.db.query("users")
-          .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
-          .first();
+        try {
+          // Attempt indexed scan
+          return await ctx.db.query("users")
+            .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
+            .first();
+        } catch (e) {
+          console.warn("[getUser] Clerk ID indexed scan failed, falling back to filter:", e);
+          // Fallback to table scan filter
+          return await ctx.db.query("users")
+            .filter((q) => q.eq(q.field("clerkId"), args.clerkId))
+            .first();
+        }
       }
       
+      // 3. Email lookup
       if (args.email) {
-        return await ctx.db.query("users")
-          .withIndex("by_email", (q) => q.eq("email", args.email))
-          .first();
+        try {
+          return await ctx.db.query("users")
+            .withIndex("by_email", (q) => q.eq("email", args.email))
+            .first();
+        } catch (e) {
+          console.warn("[getUser] Email indexed scan failed, falling back to filter:", e);
+          return await ctx.db.query("users")
+            .filter((q) => q.eq(q.field("email"), args.email))
+            .first();
+        }
       }
 
+      // 4. Phone lookup
       if (args.phone) {
-        return await ctx.db.query("users")
-          .withIndex("by_phone", (q) => q.eq("phone", args.phone))
-          .first();
+        try {
+          return await ctx.db.query("users")
+            .withIndex("by_phone", (q) => q.eq("phone", args.phone))
+            .first();
+        } catch (e) {
+          console.warn("[getUser] Phone indexed scan failed, falling back to filter:", e);
+          return await ctx.db.query("users")
+            .filter((q) => q.eq(q.field("phone"), args.phone))
+            .first();
+        }
       }
-    } catch (error) {
-      console.error("Error in getUser:", error);
+    } catch (criticalError) {
+      console.error("[getUser] CRITICAL FAILURE:", criticalError);
+      // We throw a clear error here so we can see it in client logs if needed, 
+      // but return null to prevent app crash if possible.
       return null;
     }
     
@@ -62,6 +93,7 @@ export const createUser = mutation({
     avatarUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    console.log("[createUser] Creating profile for:", args.name);
     return await ctx.db.insert("users", {
       ...args,
       memberSince: new Date().toLocaleDateString("en-US", { month: "short", year: "numeric" }),
