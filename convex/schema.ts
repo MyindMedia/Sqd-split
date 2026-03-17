@@ -4,6 +4,7 @@ import { v } from "convex/values";
 export default defineSchema({
   // ---- Users ----
   users: defineTable({
+    clerkId: v.optional(v.string()), // Stable ID from Clerk
     name: v.string(),
     handle: v.optional(v.string()),
     phone: v.optional(v.string()),
@@ -14,6 +15,7 @@ export default defineSchema({
     splitMethod: v.optional(v.union(v.literal("even"), v.literal("itemized"))),
     notificationsEnabled: v.optional(v.boolean()),
   })
+    .index("by_clerk_id", ["clerkId"])
     .index("by_phone", ["phone"])
     .index("by_email", ["email"]),
 

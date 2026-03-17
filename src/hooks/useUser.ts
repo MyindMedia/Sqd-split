@@ -9,14 +9,8 @@ export function useUser() {
   const { user: clerkUser, isLoaded: clerkLoaded } = useClerkUser();
   const [userId, setUserId] = useState<Id<"users"> | null>(null);
   
-  // Safe identifier extraction
-  const email = clerkUser?.primaryEmailAddress?.emailAddress;
-  const phone = clerkUser?.primaryPhoneNumber?.phoneNumber;
-  
-  // Choose the best identifier available
-  const queryArgs = email ? { email } : phone ? { phone } : null;
-  
-  const foundUser = useQuery(api.users.getUser, clerkUser && queryArgs ? queryArgs : "skip");
+  // Use clerkId as the definitive stable identifier
+  const foundUser = useQuery(api.users.getUser, clerkUser?.id ? { clerkId: clerkUser.id } : "skip");
   const createUser = useMutation(api.users.createUser);
 
   useEffect(() => {
@@ -28,13 +22,14 @@ export function useUser() {
         } else if (foundUser === null) {
           try {
             await createUser({
+              clerkId: clerkUser.id,
               name: clerkUser.fullName || "New User",
               handle: `@${clerkUser.username || clerkUser.firstName?.toLowerCase() || 'user'}`,
-              email: email,
-              phone: phone,
+              email: clerkUser.primaryEmailAddress?.emailAddress,
+              phone: clerkUser.primaryPhoneNumber?.phoneNumber,
               avatarUrl: clerkUser.imageUrl,
             });
-            // Convex will automatically re-run the foundUser query and we'll pick up the ID then
+            // Re-query will pick up the new user
           } catch (err) {
             console.error("Failed to sync user to Convex:", err);
           }
@@ -42,11 +37,12 @@ export function useUser() {
       }
     }
     syncUser();
-  }, [clerkUser, foundUser, createUser, clerkLoaded, email, phone]);
+  }, [clerkUser, foundUser, createUser, clerkLoaded]);
 
   // Fetch full user record once we have a userId
   const user = useQuery(api.users.getUser, userId ? { userId } : "skip");
 
+  // Fallback chain for resilience
   const finalUser = user || foundUser;
 
   return {

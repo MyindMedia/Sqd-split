@@ -5,6 +5,7 @@ import { v } from "convex/values";
 export const getUser = query({
   args: { 
     userId: v.optional(v.id("users")),
+    clerkId: v.optional(v.string()),
     phone: v.optional(v.string()), 
     email: v.optional(v.string()) 
   },
@@ -12,6 +13,12 @@ export const getUser = query({
     try {
       if (args.userId) {
         return await ctx.db.get(args.userId);
+      }
+
+      if (args.clerkId) {
+        return await ctx.db.query("users")
+          .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
+          .first();
       }
       
       if (args.email) {
@@ -47,6 +54,7 @@ export const getUserByName = query({
 // ---- Create user ----
 export const createUser = mutation({
   args: {
+    clerkId: v.optional(v.string()),
     name: v.string(),
     handle: v.optional(v.string()),
     phone: v.optional(v.string()),
