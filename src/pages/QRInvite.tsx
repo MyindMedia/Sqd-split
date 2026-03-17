@@ -3,6 +3,7 @@ import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 import { AvatarGroup } from '../components/Avatar';
+import { QRCodeSVG } from 'qrcode.react';
 import './QRInvite.css';
 
 export default function QRInvite() {
@@ -12,6 +13,9 @@ export default function QRInvite() {
   // Convex live data
   const event = useQuery(api.splitEvents.getEvent, eventId ? { eventId: eventId as Id<"splitEvents"> } : "skip");
   const participants = useQuery(api.splitEvents.getEventParticipants, eventId ? { eventId: eventId as Id<"splitEvents"> } : "skip");
+
+  // Generate real Join URL
+  const joinUrl = `${window.location.origin}/join/${eventId}`;
 
   // Fallback / Mock values
   const inviteCode = event?.inviteCode || "SPLIT99";
@@ -36,17 +40,15 @@ export default function QRInvite() {
       <div className="invite-body">
         <div className="qr-card glass-card">
           <div className="qr-box">
-            {/* Simple SVG QR Placeholder */}
-            <svg width="160" height="160" viewBox="0 0 160 160" fill="none">
-              <rect width="160" height="160" rx="12" fill="white" fillOpacity="0.05"/>
-              <path d="M20 20H60V60H20V20ZM30 30V50H50V30H30Z" fill="var(--primary)"/>
-              <path d="M100 20H140V60H100V20ZM110 30V50H130V30H110Z" fill="var(--primary)"/>
-              <path d="M20 100H60V140H20V100ZM30 110V130H50V110H30Z" fill="var(--primary)"/>
-              <rect x="100" y="100" width="15" height="15" fill="var(--primary)"/>
-              <rect x="125" y="100" width="15" height="15" fill="white" fillOpacity="0.2"/>
-              <rect x="100" y="125" width="15" height="15" fill="white" fillOpacity="0.2"/>
-              <rect x="125" y="125" width="15" height="15" fill="var(--primary)"/>
-            </svg>
+            <QRCodeSVG 
+              value={joinUrl} 
+              size={180} 
+              level="H" 
+              includeMargin={false}
+              bgColor="transparent"
+              fgColor="var(--primary)"
+              style={{ borderRadius: '12px' }}
+            />
           </div>
           <div className="invite-code-section">
             <span className="label-md text-muted">Invite Code</span>
