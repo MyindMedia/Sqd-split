@@ -6,12 +6,15 @@ import { Avatar } from '../components/Avatar';
 import { BottomNav } from '../components/BottomNav';
 import { userProfile as mockUserProfile } from '../data/mockData';
 import { useUser } from '../hooks/useUser';
+import { PaymentModal } from '../components/PaymentModal';
 import './Profile.css';
 
 export default function Profile() {
   const { userId, user: liveUser, clerkUser } = useUser();
   const updatePrefs = useMutation(api.users.updatePreferences);
   const paymentMethods = useQuery(api.friends.getPaymentMethods, userId ? { userId } : "skip");
+  
+  const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
 
   const user = (liveUser || mockUserProfile) as any;
   const [notificationsOn, setNotificationsOn] = useState(user.preferences?.notifications ?? true);
@@ -22,6 +25,11 @@ export default function Profile() {
     if (userId && updatePrefs) {
       await updatePrefs({ userId, notificationsEnabled: newVal });
     }
+  };
+
+  const handleSetupSuccess = () => {
+    // In a real app, you'd confirm the setup intent on the server
+    // For now, the successful setup intent confirms the card is saved
   };
 
   return (
@@ -69,36 +77,30 @@ export default function Profile() {
         {/* Payment Methods */}
         <section className="profile-section">
           <span className="label-lg text-muted">Payment Methods</span>
-          {(paymentMethods || []).map((pm: any) => (
-            <div key={pm._id} className="profile-payment-card">
-              <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                <rect x="2" y="6" width="24" height="16" rx="3" stroke="var(--tertiary)" strokeWidth="1.5"/>
-                <line x1="2" y1="11" x2="26" y2="11" stroke="var(--tertiary)" strokeWidth="1.5"/>
-                <rect x="5" y="17" width="8" height="2" rx="1" fill="var(--tertiary)" opacity="0.5"/>
-              </svg>
-              <div className="profile-payment-info">
-                <span className="body-md">•••• {pm.last4}</span>
-                <span className="label-sm text-muted">{pm.type.charAt(0).toUpperCase() + pm.type.slice(1)} · {pm.isDefault ? "Default" : ""}</span>
+          {(paymentMethods || []).length > 0 ? (
+            (paymentMethods || []).map((pm: any) => (
+              <div key={pm._id} className="profile-payment-card">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                  <rect x="2" y="6" width="24" height="16" rx="3" stroke="var(--tertiary)" strokeWidth="1.5"/>
+                  <line x1="2" y1="11" x2="26" y2="11" stroke="var(--tertiary)" strokeWidth="1.5"/>
+                  <rect x="5" y="17" width="8" height="2" rx="1" fill="var(--tertiary)" opacity="0.5"/>
+                </svg>
+                <div className="profile-payment-info">
+                  <span className="body-md">•••• {pm.last4}</span>
+                  <span className="label-sm text-muted">{pm.type.charAt(0).toUpperCase() + pm.type.slice(1)} · {pm.isDefault ? "Default" : ""}</span>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M6 4L10 8L6 12" stroke="#adaaaa" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
               </div>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M6 4L10 8L6 12" stroke="#adaaaa" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-            </div>
-          ))}
-          {!paymentMethods && (
-            <div className="profile-payment-card">
-              <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                <rect x="2" y="6" width="24" height="16" rx="3" stroke="var(--tertiary)" strokeWidth="1.5"/>
-                <line x1="2" y1="11" x2="26" y2="11" stroke="var(--tertiary)" strokeWidth="1.5"/>
-                <rect x="5" y="17" width="8" height="2" rx="1" fill="var(--tertiary)" opacity="0.5"/>
-              </svg>
-              <div className="profile-payment-info">
-                <span className="body-md">•••• 4242</span>
-                <span className="label-sm text-muted">Visa · Default</span>
-              </div>
+            ))
+          ) : (
+            <div className="profile-payment-card opacity-50">
+              <span className="body-md text-muted italic p-4 text-center w-full">No payment methods saved</span>
             </div>
           )}
-          <button className="profile-add-btn">
+          
+          <button className="profile-add-btn" onClick={() => setIsSetupModalOpen(true)}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <line x1="8" y1="3" x2="8" y2="13" stroke="var(--primary)" strokeWidth="1.5" strokeLinecap="round"/>
               <line x1="3" y1="8" x2="13" y2="8" stroke="var(--primary)" strokeWidth="1.5" strokeLinecap="round"/>
@@ -148,6 +150,16 @@ export default function Profile() {
 
       <BottomNav />
       <div style={{ height: 100 }} />
+
+      {userId && (
+        <PaymentModal
+          isOpen={isSetupModalOpen}
+          onClose={() => setIsSetupModalOpen(false)}
+          userId={userId}
+          mode="setup"
+          onSuccess={handleSetupSuccess}
+        />
+      )}
     </div>
   );
 }

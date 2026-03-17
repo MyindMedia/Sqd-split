@@ -118,3 +118,14 @@ export const updatePreferences = mutation({
     await ctx.db.patch(userId, cleanUpdates);
   },
 });
+
+// ---- Update Stripe Customer ID ----
+export const updateStripeCustomer = mutation({
+  args: {
+    userId: v.id("users"),
+    stripeCustomerId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.userId, { stripeCustomerId: args.stripeCustomerId });
+  },
+});

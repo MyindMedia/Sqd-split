@@ -1,23 +1,28 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Id } from '../../convex/_generated/dataModel';
 import { Avatar } from '../components/Avatar';
 import { useUser } from '../hooks/useUser';
+import { PaymentModal } from '../components/PaymentModal';
 import './ConfirmPay.css';
 
 export default function ConfirmPay() {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
   const { userId } = useUser();
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   // Convex live data
   const event = useQuery(api.splitEvents.getEvent, eventId ? { eventId: eventId as Id<"splitEvents"> } : "skip");
   const participants = useQuery(api.splitEvents.getEventParticipants, eventId ? { eventId: eventId as Id<"splitEvents"> } : "skip");
   const updateTipMutation = useMutation(api.splitEvents.updateParticipantTip);
 
-  const me = participants?.find(p => p.userId === userId);
+  const me = participants?.find((p: any) => p.userId === userId);
   const currentTip = me?.tipPercentage ?? 20;
+  const myOwedAmount = me?.calculatedTotal || me?.totalOwed || 0;
+  const myPaymentStatus = me?.paymentStatus || 'pending';
 
   const handleTipChange = async (percent: number) => {
     if (userId && eventId && updateTipMutation) {
@@ -29,18 +34,19 @@ export default function ConfirmPay() {
     }
   };
 
+  const handlePaymentSuccess = () => {
+    // In a real app, you'd update the database here via mutation
+    // For now, we'll navigate to the receipt as the "success" state
+    navigate(`/receipt/${eventId}`);
+  };
+
   const shares = participants?.map((p: any) => ({
     name: p.user?.name || "User",
     amount: p.calculatedTotal || p.totalOwed || 0,
     paid: p.paymentStatus !== "pending"
-  })) || [
-    { name: 'Maddy', amount: 275, paid: true },
-    { name: 'Jessy', amount: 100, paid: true },
-    { name: 'Marissa', amount: 350.24, paid: true },
-    { name: 'Rogers', amount: 150, paid: false },
-  ];
+  })) || [];
 
-  const totalAmount = event?.totalBill || 875.24;
+  const totalAmount = event?.totalBill || 0;
 
   return (
     <div className="confirm-page animate-fade-in">
@@ -80,7 +86,6 @@ export default function ConfirmPay() {
           ))}
         </div>
 
-        {/* Tip Selector for Current User */}
         <section className="tip-section glass-card">
           <span className="label-md text-muted">Add Your Tip</span>
           <div className="tip-grid">
@@ -99,25 +104,25 @@ export default function ConfirmPay() {
         <div className="confirm-total-card glass-card">
           <div className="confirm-total-row">
             <span className="body-md text-muted">Subtotal</span>
-            <span className="body-md">${(event?.subtotal || 812.32).toFixed(2)}</span>
+            <span className="body-md">${(event?.subtotal || 0).toFixed(2)}</span>
           </div>
           <div className="confirm-total-row">
             <span className="body-md text-muted">Tax</span>
-            <span className="body-md">${(event?.taxAmount || 71.08).toFixed(2)}</span>
+            <span className="body-md">${(event?.taxAmount || 0).toFixed(2)}</span>
           </div>
           <div className="confirm-total-row">
             <span className="body-md text-muted">Tip (Group Total)</span>
-            <span className="body-md">${(event?.tipAmount || 146.22).toFixed(2)}</span>
+            <span className="body-md">${(event?.tipAmount || 0).toFixed(2)}</span>
           </div>
           <div className="confirm-divider" />
           <div className="confirm-total-row total">
-            <span className="title-md">Total</span>
+            <span className="title-md">Total Bill</span>
             <span className="headline-sm text-primary">${totalAmount.toFixed(2)}</span>
           </div>
         </div>
 
         <div className="confirm-payment-method">
-          <span className="label-md text-muted">Payment Method</span>
+          <span className="label-md text-muted">Your Share to Pay</span>
           <div className="payment-card-row">
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
               <rect x="2" y="6" width="24" height="16" rx="3" stroke="var(--tertiary)" strokeWidth="1.5"/>
@@ -125,21 +130,38 @@ export default function ConfirmPay() {
               <rect x="5" y="17" width="8" height="2" rx="1" fill="var(--tertiary)" opacity="0.5"/>
             </svg>
             <div>
-              <span className="body-md">Visa •••• 4242</span>
-              <span className="label-sm text-muted">Default</span>
+              <span className="body-md">Your Total</span>
+              <span className="label-sm text-muted">{myPaymentStatus === 'pending' ? 'Unpaid' : 'Paid'}</span>
             </div>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ marginLeft: 'auto' }}>
-              <path d="M6 4L10 8L6 12" stroke="#adaaaa" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
+            <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
+               <span className="title-md text-primary">${myOwedAmount.toFixed(2)}</span>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="confirm-footer">
-        <button className="btn-primary-gradient" onClick={() => navigate(`/receipt/${eventId}`)}>
-          Confirm & Pay ${totalAmount.toFixed(2)}
-        </button>
+        {myPaymentStatus === 'pending' ? (
+          <button className="btn-primary-gradient" onClick={() => setIsPaymentModalOpen(true)}>
+            Confirm & Pay ${myOwedAmount.toFixed(2)}
+          </button>
+        ) : (
+          <button className="btn-primary-gradient" onClick={() => navigate(`/receipt/${eventId}`)}>
+            View Receipt
+          </button>
+        )}
       </div>
+
+      {userId && (
+        <PaymentModal
+          isOpen={isPaymentModalOpen}
+          onClose={() => setIsPaymentModalOpen(false)}
+          userId={userId}
+          mode="payment"
+          amount={Math.round(myOwedAmount * 100)} // Convert to cents
+          onSuccess={handlePaymentSuccess}
+        />
+      )}
     </div>
   );
 }

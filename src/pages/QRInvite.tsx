@@ -15,7 +15,7 @@ export default function QRInvite() {
 
   // Fallback / Mock values
   const inviteCode = event?.inviteCode || "SPLIT99";
-  const participantNames = participants?.map(p => p.user?.name || "User") || ["Lawrence B."];
+  const participantNames = participants?.map((p: any) => p.user?.name || "User") || ["Lawrence B."];
 
   return (
     <div className="invite-page animate-fade-in">

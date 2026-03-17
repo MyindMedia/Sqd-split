@@ -5,6 +5,7 @@ export default defineSchema({
   // ---- Users ----
   users: defineTable({
     clerkId: v.optional(v.string()), // Stable ID from Clerk
+    stripeCustomerId: v.optional(v.string()), // ID from Stripe
     name: v.string(),
     handle: v.optional(v.string()),
     phone: v.optional(v.string()),
@@ -16,6 +17,7 @@ export default defineSchema({
     notificationsEnabled: v.optional(v.boolean()),
   })
     .index("by_clerk_id", ["clerkId"])
+    .index("by_stripe_customer_id", ["stripeCustomerId"])
     .index("by_phone", ["phone"])
     .index("by_email", ["email"]),
 

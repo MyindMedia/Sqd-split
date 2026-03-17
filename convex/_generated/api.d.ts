@@ -11,6 +11,7 @@
 import type * as friends from "../friends.js";
 import type * as receiptItems from "../receiptItems.js";
 import type * as splitEvents from "../splitEvents.js";
+import type * as stripe from "../stripe.js";
 import type * as users from "../users.js";
 
 import type {
@@ -23,6 +24,7 @@ declare const fullApi: ApiFromModules<{
   friends: typeof friends;
   receiptItems: typeof receiptItems;
   splitEvents: typeof splitEvents;
+  stripe: typeof stripe;
   users: typeof users;
 }>;
 
