@@ -9,15 +9,27 @@ export const getUser = query({
     email: v.optional(v.string()) 
   },
   handler: async (ctx, args) => {
-    if (args.userId) {
-      return await ctx.db.get(args.userId);
+    try {
+      if (args.userId) {
+        return await ctx.db.get(args.userId);
+      }
+      
+      if (args.email) {
+        return await ctx.db.query("users")
+          .withIndex("by_email", (q) => q.eq("email", args.email))
+          .first();
+      }
+
+      if (args.phone) {
+        return await ctx.db.query("users")
+          .withIndex("by_phone", (q) => q.eq("phone", args.phone))
+          .first();
+      }
+    } catch (error) {
+      console.error("Error in getUser:", error);
+      return null;
     }
-    if (args.phone) {
-      return await ctx.db.query("users").withIndex("by_phone", (q) => q.eq("phone", args.phone!)).first();
-    }
-    if (args.email) {
-      return await ctx.db.query("users").withIndex("by_email", (q) => q.eq("email", args.email!)).first();
-    }
+    
     return null;
   },
 });
