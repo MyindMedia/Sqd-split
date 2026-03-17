@@ -1,0 +1,161 @@
+.squad-card-container {
+  perspective: 1000px;
+  width: 100%;
+  max-width: 320px;
+  margin: var(--space-6) auto;
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.squad-card-container.secured {
+  transform: scale(1.02);
+}
+
+.squad-card {
+  width: 100%;
+  aspect-ratio: 1.586 / 1; /* Standard credit card ratio */
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid rgba(225, 253, 113, 0.3);
+  background: linear-gradient(135deg, rgba(225, 253, 113, 0.1) 0%, rgba(0, 0, 0, 0.8) 100%);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(225, 253, 113, 0.05);
+}
+
+.card-shine {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 45%,
+    rgba(225, 253, 113, 0.1) 50%,
+    transparent 55%
+  );
+  animation: cardShine 4s infinite linear;
+  pointer-events: none;
+}
+
+@keyframes cardShine {
+  from { transform: translateX(-30%) translateY(-30%); }
+  to { transform: translateX(30%) translateY(30%); }
+}
+
+.card-inner {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-brand {
+  font-family: var(--font-logo);
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+}
+
+.card-chip {
+  width: 40px;
+  height: 30px;
+  background: linear-gradient(135deg, #ffd700 0%, #b8860b 100%);
+  border-radius: 6px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  opacity: 0.8;
+}
+
+.chip-line {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.2);
+  width: 80%;
+}
+
+.card-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.card-emoji-box {
+  width: 56px;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  border: 1px solid rgba(225, 253, 113, 0.2);
+}
+
+.card-status-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: rgba(0, 0, 0, 0.4);
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 0.5px solid rgba(225, 253, 113, 0.3);
+}
+
+.pulse-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--primary);
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(225, 253, 113, 0.7); }
+  70% { transform: scale(1.2); opacity: 0.5; box-shadow: 0 0 0 6px rgba(225, 253, 113, 0); }
+  100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(225, 253, 113, 0); }
+}
+
+.card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.card-holder, .card-amount {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.security-hologram {
+  position: absolute;
+  bottom: var(--space-5);
+  right: var(--space-5);
+  opacity: 0.1;
+  z-index: 1;
+}
+
+.card-glimmer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(225, 253, 113, 0.15) 0%, transparent 60%);
+  mix-blend-mode: color-dodge;
+  pointer-events: none;
+}

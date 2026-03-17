@@ -133,43 +133,110 @@ export const executeAutoPull = action({
     const results: Array<{ userId: Id<"users">; success: boolean; error?: string }> = [];
 
     for (const p of participants) {
-      // 2. Only process if ready and pending
+      // 2. Only process if ready/authorized and pending/authorized
+      const isPending = p.paymentStatus === "pending";
+      const isAuthorized = p.paymentStatus === "authorized" && p.stripeAuthIntentId;
+
+      if ((p.isReadyToPay || isAuthorized) && (isPending || isAuthorized)) {
+        const amount = Math.round((p.calculatedTotal || 0) * 100);
+        if (amount <= 0) continue;
+
+        try {
+          if (isAuthorized && p.stripeAuthIntentId) {
+            // ---- CAPTURE HOLD ----
+            await stripeInstance.paymentIntents.capture(p.stripeAuthIntentId, {
+              amount_to_capture: amount,
+            });
+          } else {
+            // ---- NEW PULL ----
+            const paymentMethods = await ctx.runQuery(api.friends.getPaymentMethods, { userId: p.userId });
+            const defaultMethod = paymentMethods.find((m: any) => m.isDefault) || paymentMethods[0];
+
+            if (defaultMethod?.stripePaymentMethodId) {
+              const user = await ctx.runQuery(api.users.getUser, { userId: p.userId });
+              await stripeInstance.paymentIntents.create({
+                amount,
+                currency: "usd",
+                customer: user?.stripeCustomerId,
+                payment_method: defaultMethod.stripePaymentMethodId,
+                off_session: true,
+                confirm: true,
+              });
+            } else {
+              throw new Error("No payment method found");
+            }
+          }
+
+          // 5. Mark as charged in database
+          await ctx.runMutation(api.splitEvents.updateParticipantStatus, {
+            eventId: args.eventId,
+            userId: p.userId,
+            status: "charged"
+          });
+
+          results.push({ userId: p.userId, success: true });
+        } catch (e: any) {
+          console.error(`Auto-pull failed for user ${p.userId}:`, e.message);
+          results.push({ userId: p.userId, success: false, error: e.message });
+        }
+      }
+    }
+
+    return results;
+  },
+});
+
+export const authorizeSquadHolds = action({
+  args: {
+    eventId: v.id("splitEvents"),
+  },
+  handler: async (ctx, args): Promise<Array<{ userId: Id<"users">; success: boolean; error?: string }>> => {
+    const stripeInstance = getStripe();
+    const participants = await ctx.runQuery(api.splitEvents.getEventParticipants, { eventId: args.eventId });
+    const results: Array<{ userId: Id<"users">; success: boolean; error?: string }> = [];
+
+    for (const p of participants) {
       if (p.isReadyToPay && p.paymentStatus === "pending") {
         const amount = Math.round((p.calculatedTotal || 0) * 100);
         if (amount <= 0) continue;
 
-        // 3. Get user's default payment method
         const paymentMethods = await ctx.runQuery(api.friends.getPaymentMethods, { userId: p.userId });
         const defaultMethod = paymentMethods.find((m: any) => m.isDefault) || paymentMethods[0];
 
         if (defaultMethod?.stripePaymentMethodId) {
           try {
-            // 4. Create and confirm PaymentIntent off-session
             const user = await ctx.runQuery(api.users.getUser, { userId: p.userId });
-            
-            await stripeInstance.paymentIntents.create({
+            const intent = await stripeInstance.paymentIntents.create({
               amount,
               currency: "usd",
               customer: user?.stripeCustomerId,
               payment_method: defaultMethod.stripePaymentMethodId,
               off_session: true,
               confirm: true,
+              capture_method: "manual", // PLACE HOLD
             });
 
-            // 5. Mark as charged in database
-            await ctx.runMutation(api.splitEvents.updateParticipantStatus, {
+            await ctx.runMutation(api.splitEvents.updateParticipantAuth, {
               eventId: args.eventId,
               userId: p.userId,
-              status: "charged"
+              stripeAuthIntentId: intent.id,
             });
 
             results.push({ userId: p.userId, success: true });
           } catch (e: any) {
-            console.error(`Auto-pull failed for user ${p.userId}:`, e.message);
+            console.error(`Auth hold failed for user ${p.userId}:`, e.message);
             results.push({ userId: p.userId, success: false, error: e.message });
           }
         }
       }
+    }
+
+    // Mark event as secured if any hold succeeded
+    if (results.some(r => r.success)) {
+      await ctx.runMutation(api.splitEvents.updateEventSecured, {
+        eventId: args.eventId,
+        isSecured: true,
+      });
     }
 
     return results;

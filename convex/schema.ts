@@ -64,6 +64,7 @@ export default defineSchema({
       v.literal("settled")
     ),
     inviteCode: v.optional(v.string()),
+    isSecured: v.optional(v.boolean()),
   })
     .index("by_host", ["hostId"])
     .index("by_status", ["status"])
@@ -84,6 +85,7 @@ export default defineSchema({
       v.literal("failed")
     ),
     isReadyToPay: v.optional(v.boolean()),
+    stripeAuthIntentId: v.optional(v.string()),
     joinedAt: v.string(),
   })
     .index("by_event", ["eventId"])

@@ -284,3 +284,38 @@ export const updateParticipantStatus = mutation({
     });
   },
 });
+
+// ---- Update participant auth hold ----
+export const updateParticipantAuth = mutation({
+  args: {
+    eventId: v.id("splitEvents"),
+    userId: v.id("users"),
+    stripeAuthIntentId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const participant = await ctx.db
+      .query("participants")
+      .withIndex("by_event_user", (q) =>
+        q.eq("eventId", args.eventId).eq("userId", args.userId)
+      )
+      .first();
+
+    if (!participant) return null;
+
+    await ctx.db.patch(participant._id, {
+      stripeAuthIntentId: args.stripeAuthIntentId,
+      paymentStatus: "authorized",
+    });
+  },
+});
+
+// ---- Update event secured status ----
+export const updateEventSecured = mutation({
+  args: {
+    eventId: v.id("splitEvents"),
+    isSecured: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.eventId, { isSecured: args.isSecured });
+  },
+});

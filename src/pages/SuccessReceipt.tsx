@@ -4,6 +4,7 @@ import { api } from '../../convex/_generated/api';
 import type { Id } from "../../convex/_generated/dataModel";
 import { useUser } from '../hooks/useUser';
 import { useState } from 'react';
+import { SquadCard } from '../components/SquadCard';
 import './SuccessReceipt.css';
 
 export default function SuccessReceipt() {
@@ -16,13 +17,30 @@ export default function SuccessReceipt() {
   const event = useQuery(api.splitEvents.getEvent, eventId ? { eventId: eventId as Id<"splitEvents"> } : "skip");
   const participants = useQuery(api.splitEvents.getEventParticipants, eventId ? { eventId: eventId as Id<"splitEvents"> } : "skip");
   const executeAutoPull = useAction(api.stripe.executeAutoPull);
+  const authorizeHolds = useAction(api.stripe.authorizeSquadHolds);
 
   const isHost = event?.hostId === userId;
-  const readyParticipants = participants?.filter(p => p.isReadyToPay && p.paymentStatus === "pending") || [];
-  const pendingParticipants = participants?.filter(p => p.paymentStatus === "pending") || [];
+  const isSecured = event?.isSecured || false;
+  
+  const readyParticipants = participants?.filter((p: any) => p.isReadyToPay && p.paymentStatus === "pending") || [];
+  const authorizedParticipants = participants?.filter((p: any) => p.paymentStatus === "authorized") || [];
+  const pendingParticipants = participants?.filter((p: any) => p.paymentStatus === "pending" || p.paymentStatus === "authorized") || [];
   
   const totalAmount = event?.totalBill || 0;
-  const readyAmount = readyParticipants.reduce((sum, p) => sum + (p.calculatedTotal || 0), 0);
+  const readyAmount = readyParticipants.reduce((sum: number, p: any) => sum + (p.calculatedTotal || 0), 0);
+  const authorizedAmount = authorizedParticipants.reduce((sum: number, p: any) => sum + (p.calculatedTotal || 0) , 0);
+
+  const handleSecureTable = async () => {
+    if (!eventId) return;
+    setIsProcessing(true);
+    try {
+      await authorizeHolds({ eventId: eventId as Id<"splitEvents"> });
+    } catch (e) {
+      console.error("Secure Table failed:", e);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const handleAutoPull = async () => {
     if (!eventId) return;
@@ -90,19 +108,32 @@ export default function SuccessReceipt() {
           </button>
         </div>
 
+        {isHost && isSecured && authorizedAmount > 0 && (
+          <SquadCard 
+            eventName={event?.name || "Squad"} 
+            emoji={event?.emoji || "🥂"} 
+            amount={authorizedAmount} 
+            isSecured={true} 
+          />
+        )}
+
         {isHost && pendingParticipants.length > 0 && (
           <div className="squad-status-card glass-card animate-slide-up" style={{ marginTop: 'var(--space-6)', padding: 'var(--space-6)' }}>
             <div className="status-header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-4)' }}>
               <span className="title-sm">Squad Status</span>
-              <span className="label-sm text-primary">{readyParticipants.length}/{pendingParticipants.length} Ready</span>
+              <span className="label-sm text-primary">
+                {isSecured ? `${authorizedParticipants.length} Secured` : `${readyParticipants.length}/${pendingParticipants.length} Ready`}
+              </span>
             </div>
             
             <div className="participant-mini-list" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-              {participants?.map((p, i) => (
+              {participants?.map((p: any, i: number) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span className="body-sm" style={{ opacity: p.paymentStatus === 'pending' ? 0.6 : 1 }}>{p.user?.name}</span>
-                  {p.paymentStatus !== 'pending' ? (
+                  {p.paymentStatus === 'charged' ? (
                     <span className="label-sm text-primary">Paid</span>
+                  ) : p.paymentStatus === 'authorized' ? (
+                    <span className="label-sm" style={{ color: '#FFD700' }}>Secured</span>
                   ) : p.isReadyToPay ? (
                     <span className="label-sm" style={{ color: 'var(--primary)', fontWeight: 600 }}>Ready</span>
                   ) : (
@@ -112,16 +143,33 @@ export default function SuccessReceipt() {
               ))}
             </div>
 
-            {readyParticipants.length > 0 && (
-              <button 
-                className="btn-primary-gradient" 
-                style={{ width: '100%', marginTop: 'var(--space-6)' }}
-                onClick={handleAutoPull}
-                disabled={isProcessing}
-              >
-                {isProcessing ? "Processing..." : `Auto-Pull Ready ($${readyAmount.toFixed(2)})`}
-              </button>
-            )}
+            <div style={{ marginTop: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+              {!isSecured && readyParticipants.length > 0 && (
+                <button 
+                  className="btn-primary-gradient" 
+                  style={{ width: '100%' }}
+                  onClick={handleSecureTable}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? "Securing..." : `Secure Table ($${readyAmount.toFixed(2)})`}
+                </button>
+              )}
+
+              {isSecured && authorizedParticipants.length > 0 && (
+                <button 
+                  className="btn-primary-gradient" 
+                  style={{ width: '100%' }}
+                  onClick={handleAutoPull}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? "Processing..." : `Close & Finalize Billing`}
+                </button>
+              )}
+
+              {!isSecured && readyParticipants.length === 0 && (
+                <p className="label-sm text-muted text-center">Waiting for friends to tap "Ready"...</p>
+              )}
+            </div>
           </div>
         )}
       </div>
