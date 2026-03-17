@@ -5,18 +5,14 @@ import './index.css';
 import App from './App';
 
 // Convex client — connects to your deployment
-// When not configured, the app gracefully falls back to mock data
 const convexUrl = import.meta.env.VITE_CONVEX_URL;
-const convex = convexUrl ? new ConvexReactClient(convexUrl) : null;
+// Use a fallback URL if not provided to avoid crash, though it won't connect
+const convex = new ConvexReactClient(convexUrl || "https://dummy.convex.cloud");
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {convex ? (
-      <ConvexProvider client={convex}>
-        <App />
-      </ConvexProvider>
-    ) : (
+    <ConvexProvider client={convex}>
       <App />
-    )}
+    </ConvexProvider>
   </StrictMode>,
 );

@@ -19,7 +19,6 @@ export function useUser() {
       if (foundUser) {
         setUserId(foundUser._id);
       } else if (foundUser === null && phone) {
-        // Create new user if they logged in with a new phone
         const id = await createUser({
           name: "Lawrence B.",
           handle: "@thamyind",
