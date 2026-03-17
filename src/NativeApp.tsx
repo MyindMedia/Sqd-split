@@ -1,5 +1,4 @@
-import React from 'react';
-import { StyleSheet, View, SafeAreaView, StatusBar, Platform } from 'react-native';
+import { StyleSheet, View, SafeAreaView, StatusBar } from 'react-native';
 import { WebView } from 'react-native-webview';
 
 // The URL of your web app. 

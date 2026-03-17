@@ -14,7 +14,7 @@ export default function Profile() {
   const updatePrefs = useMutation(api.users.updatePreferences);
   const paymentMethods = useQuery(api.friends.getPaymentMethods, userId ? { userId } : "skip");
 
-  const user = liveUser || mockUserProfile;
+  const user = (liveUser || mockUserProfile) as any;
   const [notificationsOn, setNotificationsOn] = useState(user.preferences?.notifications ?? true);
 
   const toggleNotifications = async () => {

@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
-import { Id } from '../../convex/_generated/dataModel';
+import type { Id } from "../../convex/_generated/dataModel";
 import './SuccessReceipt.css';
 
 export default function SuccessReceipt() {

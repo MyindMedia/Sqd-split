@@ -19,7 +19,7 @@ export default function Home() {
   const splits = liveEvents || mockRecentSplits;
   const friends = liveFriends || mockFriends;
 
-  const activeSplit = splits[0];
+  const activeSplit = splits[0] as any;
 
   return (
     <div className="home-page">
