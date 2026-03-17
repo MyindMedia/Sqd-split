@@ -9,7 +9,7 @@ import './Home.css';
 
 export default function Home() {
   const navigate = useNavigate();
-  const { userId } = useUser();
+  const { userId, user: liveUser, isLoading } = useUser();
   
   // Convex live data
   const liveEvents = useQuery(api.splitEvents.listUserEvents, userId ? { userId } : "skip");
@@ -21,6 +21,14 @@ export default function Home() {
 
   const activeSplit = (splits && splits.length > 0) ? (splits[0] as any) : mockRecentSplits[0];
 
+  if (isLoading) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0e0e0e' }}>
+        <div className="animate-pulse" style={{ width: 40, height: 40, borderRadius: '50%', border: '3px solid var(--primary)', borderTopColor: 'transparent', animation: 'spin 1s linear infinite' }}></div>
+      </div>
+    );
+  }
+
   return (
     <div className="home-page">
       {/* Header */}
@@ -31,7 +39,7 @@ export default function Home() {
             <line x1="15" y1="15" x2="20" y2="20" stroke="#adaaaa" strokeWidth="1.5" strokeLinecap="round"/>
           </svg>
         </button>
-        <Avatar name="Lawrence B." size={36} />
+        <Avatar name={liveUser?.name || "User"} size={36} />
       </header>
 
       {/* Active Split Card */}

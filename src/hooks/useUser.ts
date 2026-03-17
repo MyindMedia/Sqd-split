@@ -9,13 +9,19 @@ export function useUser() {
   const { user: clerkUser, isLoaded: clerkLoaded } = useClerkUser();
   const [userId, setUserId] = useState<Id<"users"> | null>(null);
   
-  // Sync Clerk user to Convex
+  // Try to find user by email OR phone (whichever Clerk has)
+  const userIdentifier = clerkUser?.primaryEmailAddress?.emailAddress || clerkUser?.primaryPhoneNumber?.phoneNumber;
+  const identifierType = clerkUser?.primaryEmailAddress?.emailAddress ? "email" : "phone";
+  
+  const foundUser = useQuery(api.users.getUser, clerkUser ? { 
+    [identifierType]: userIdentifier 
+  } : "skip");
+
   const createUser = useMutation(api.users.createUser);
-  const foundUser = useQuery(api.users.getUser, clerkUser ? { email: clerkUser.primaryEmailAddress?.emailAddress } : "skip");
 
   useEffect(() => {
     async function syncUser() {
-      if (clerkLoaded && clerkUser) {
+      if (clerkLoaded && clerkUser && foundUser !== undefined) {
         if (foundUser) {
           setUserId(foundUser._id);
         } else if (foundUser === null) {
@@ -23,6 +29,7 @@ export function useUser() {
             name: clerkUser.fullName || "New User",
             handle: `@${clerkUser.username || clerkUser.firstName?.toLowerCase() || 'user'}`,
             email: clerkUser.primaryEmailAddress?.emailAddress,
+            phone: clerkUser.primaryPhoneNumber?.phoneNumber,
             avatarUrl: clerkUser.imageUrl,
           });
           setUserId(id);
@@ -32,12 +39,13 @@ export function useUser() {
     syncUser();
   }, [clerkUser, foundUser, createUser, clerkLoaded]);
 
-  const user = useQuery(api.users.getUser, userId ? { userId } as any : "skip");
+  // Fetch full user record once we have a userId
+  const user = useQuery(api.users.getUser, userId ? { userId } : "skip");
 
   return {
-    user,
-    userId,
-    isLoading: !clerkLoaded || (userId === null && clerkUser !== null),
+    user: user || foundUser, // Prefer the one by ID, fallback to the one by identifier
+    userId: userId || foundUser?._id,
+    isLoading: !clerkLoaded || (clerkUser && foundUser === undefined),
     clerkUser,
   };
 }

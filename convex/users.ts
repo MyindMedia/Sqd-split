@@ -3,8 +3,15 @@ import { v } from "convex/values";
 
 // ---- Get current user (by phone or email) ----
 export const getUser = query({
-  args: { phone: v.optional(v.string()), email: v.optional(v.string()) },
+  args: { 
+    userId: v.optional(v.id("users")),
+    phone: v.optional(v.string()), 
+    email: v.optional(v.string()) 
+  },
   handler: async (ctx, args) => {
+    if (args.userId) {
+      return await ctx.db.get(args.userId);
+    }
     if (args.phone) {
       return await ctx.db.query("users").withIndex("by_phone", (q) => q.eq("phone", args.phone!)).first();
     }
